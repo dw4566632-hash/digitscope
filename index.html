@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DigitScope — Deriv Scanner</title>
+<style>
+:root{--bg:#080d12;--panel:#101820;--panel2:#0c131a;--line:#22313d;--text:#edf5f7;--muted:#8fa2ae;--green:#42e6a4;--red:#ff657a;--amber:#ffc66d;--blue:#6bb8ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#10202a 0,#080d12 50%);color:var(--text);font:14px/1.45 Inter,system-ui,Segoe UI,Arial,sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;padding:17px 22px;border-bottom:1px solid var(--line);background:#080d12dd;position:sticky;top:0;z-index:2;backdrop-filter:blur(10px)}
+.brand{display:flex;gap:11px;align-items:center;font-size:18px;font-weight:800;letter-spacing:.3px}.logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#42e6a4,#4b9cff);display:grid;place-items:center;color:#07120f;font-weight:900}.brand small{display:block;font-size:10px;color:var(--muted);font-weight:600;letter-spacing:1.7px}
+.status{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}.dot{width:8px;height:8px;border-radius:50%;background:#6c7a83}.dot.live{background:var(--green);box-shadow:0 0 12px #42e6a477}
+main{max-width:1300px;margin:auto;padding:22px;display:grid;gap:16px}.topline{display:flex;align-items:end;justify-content:space-between;gap:16px;flex-wrap:wrap}.eyebrow{font-size:10px;color:var(--green);letter-spacing:2px;font-weight:800}.heading{font-size:26px;font-weight:800;letter-spacing:-.7px;margin:3px 0}.sub{color:var(--muted);font-size:12px}
+.controls,.panel,.stat{background:linear-gradient(145deg,#111b24,#0d141b);border:1px solid var(--line);border-radius:15px}.controls{padding:15px;display:flex;gap:12px;align-items:end;flex-wrap:wrap}.field{display:grid;gap:6px;min-width:130px;flex:1}.field label{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase}select,input{width:100%;background:#080f15;color:var(--text);border:1px solid #2a3b48;border-radius:9px;padding:10px 11px;outline:none}select:focus,input:focus{border-color:var(--green)}button{border:0;border-radius:9px;padding:11px 16px;font-weight:800;cursor:pointer}.primary{background:var(--green);color:#06130e}.secondary{background:#1c2a35;color:var(--text);border:1px solid #31434f}.danger{color:#ff9aa8;background:#301923;border:1px solid #542634}.buttonrow{display:flex;gap:8px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.stat{padding:14px}.stat .label{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:1.1px;font-weight:800}.stat .value{font-size:23px;font-weight:800;margin-top:5px}.green{color:var(--green)}.red{color:var(--red)}.amber{color:var(--amber)}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:14px}.panel{padding:16px;min-width:0}.panelhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px}.paneltitle{font-weight:800;font-size:14px}.pill{font-size:10px;padding:4px 8px;border:1px solid var(--line);border-radius:30px;color:var(--muted)}.digitrow{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;margin:12px 0}.digit{padding:8px 0;text-align:center;border-radius:7px;background:#0a1117;border:1px solid #243540;color:#c8d5dc;font-weight:800;cursor:pointer}.digit.selected{background:#123a2d;border-color:var(--green);color:var(--green);box-shadow:0 0 0 1px #42e6a422}.digit.hot{border-color:#7c6a3e;color:var(--amber)}.prediction{display:flex;align-items:center;gap:13px;padding:13px;background:#0a1218;border-radius:11px;border:1px solid #22343f}.bigdigit{width:56px;height:56px;display:grid;place-items:center;border-radius:12px;background:#12372c;color:var(--green);font-size:29px;font-weight:900}.predcopy{flex:1}.predcopy strong{display:block;font-size:15px}.predcopy span{font-size:11px;color:var(--muted)}.confidence{font-size:20px;font-weight:900}.bar{height:5px;background:#23313a;border-radius:9px;margin-top:10px;overflow:hidden}.bar span{height:100%;display:block;background:var(--green);width:0;transition:width .25s}.redbar span{background:var(--red)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.metric{background:#0a1117;border-radius:9px;padding:10px}.metric small{display:block;color:var(--muted);font-size:10px}.metric b{font-size:16px}
+.digits{display:flex;gap:5px;flex-wrap:wrap}.bubble{width:29px;height:29px;border-radius:8px;display:grid;place-items:center;background:#17242d;border:1px solid #263b47;font-weight:800}.bubble.latest{background:#153b2d;color:var(--green);border-color:#2b7659}
+.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px 8px;text-align:left;border-bottom:1px solid #1f2d37;white-space:nowrap}th{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.9px}tbody tr:last-child td{border-bottom:0}.empty{color:var(--muted);text-align:center;padding:20px}.notice{border:1px solid #59472b;background:#211b11;color:#ddc59c;border-radius:11px;padding:12px;font-size:11px}.footer{color:#657984;font-size:10px;text-align:center;padding:8px}
+@media(max-width:850px){.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}.twocol{grid-template-columns:1fr}.heading{font-size:22px}}@media(max-width:480px){main{padding:12px}.grid4{gap:8px}.stat{padding:11px}.stat .value{font-size:19px}header{padding:12px}.controls{padding:12px}.field{min-width:42%}.digitrow{gap:3px}.digit{font-size:12px}.heading{font-size:20px}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="logo">D</div><div>DigitScope <small>DERIV MARKET INTELLIGENCE</small></div></div><div class="status"><span class="dot" id="dot"></span><span id="status">Disconnected</span></div></header>
+<main>
+ <div class="topline"><div><div class="eyebrow">LIVE MARKET ANALYTICS</div><div class="heading">AI Digit Scanner</div><div class="sub">Live tick analysis • Matches / Differs • Independent prediction digits</div></div><div class="sub">Build 0.1 · Scanner-only mode</div></div>
+ <section class="controls">
+  <div class="field"><label>Market / volatility</label><select id="symbol"><option value="R_10">Volatility 10 Index</option><option value="R_25">Volatility 25 Index</option><option value="R_50">Volatility 50 Index</option><option value="R_75">Volatility 75 Index</option><option value="R_100" selected>Volatility 100 Index</option><option value="1HZ10V">Volatility 10 (1s) Index</option><option value="1HZ25V">Volatility 25 (1s) Index</option><option value="1HZ50V">Volatility 50 (1s) Index</option><option value="1HZ75V">Volatility 75 (1s) Index</option><option value="1HZ100V">Volatility 100 (1s) Index</option></select></div>
+  <div class="field"><label>Analysis window</label><select id="window"><option value="25">Last 25 ticks</option><option value="50" selected>Last 50 ticks</option><option value="100">Last 100 ticks</option><option value="250">Last 250 ticks</option></select></div>
+  <div class="field"><label>Stake reference (USD)</label><input id="stake" type="number" value="0.35" min="0.35" step="0.01" /></div>
+  <div class="buttonrow"><button class="primary" id="connect">Connect scanner</button><button class="secondary" id="stop" disabled>Stop</button></div>
+ </section>
+ <section class="grid4">
+  <div class="stat"><div class="label">Latest digit</div><div class="value green" id="latest">—</div><div class="sub" id="lastquote">Waiting for ticks</div></div>
+  <div class="stat"><div class="label">Ticks collected</div><div class="value" id="count">0</div><div class="sub">Current session</div></div>
+  <div class="stat"><div class="label">Most frequent digit</div><div class="value amber" id="frequent">—</div><div class="sub" id="freqdetail">Insufficient data</div></div>
+  <div class="stat"><div class="label">Connection latency</div><div class="value" id="latency">—</div><div class="sub">Approximate tick update</div></div>
+ </section>
+ <section class="twocol">
+  <div class="panel">
+   <div class="panelhead"><div class="paneltitle">MATCHES · Prediction</div><span class="pill">DIGIT EQUALS</span></div>
+   <div class="sub">Choose the digit you want to test for a Matches contract.</div>
+   <div class="digitrow" id="matchDigits"></div>
+   <div class="prediction"><div class="bigdigit" id="matchBig">5</div><div class="predcopy"><strong id="matchLabel">Matches digit 5</strong><span id="matchRate">Historical sample frequency: waiting for data</span><div class="bar"><span id="matchBar"></span></div></div><div class="confidence" id="matchPct">—</div></div>
+   <div class="metrics"><div class="metric"><small>Observed matches</small><b id="matchHits">0</b></div><div class="metric"><small>Sample size</small><b id="matchN">0</b></div><div class="metric"><small>Expected baseline</small><b>10%</b></div></div>
+  </div>
+  <div class="panel">
+   <div class="panelhead"><div class="paneltitle">DIFFERS · Prediction</div><span class="pill">DIGIT NOT EQUAL</span></div>
+   <div class="sub">Choose a separate digit for a Differs contract.</div>
+   <div class="digitrow" id="differDigits"></div>
+   <div class="prediction"><div class="bigdigit" id="diffBig" style="background:#3b1c28;color:var(--red)">2</div><div class="predcopy"><strong id="diffLabel">Differs digit 2</strong><span id="diffRate">Historical sample frequency: waiting for data</span><div class="bar redbar"><span id="diffBar"></span></div></div><div class="confidence red" id="diffPct">—</div></div>
+   <div class="metrics"><div class="metric"><small>Observed differs</small><b id="diffHits">0</b></div><div class="metric"><small>Sample size</small><b id="diffN">0</b></div><div class="metric"><small>Expected baseline</small><b>90%</b></div></div>
+  </div>
+ </section>
+ <section class="twocol">
+  <div class="panel"><div class="panelhead"><div class="paneltitle">Digit distribution</div><span class="pill" id="distWindow">LAST 50 TICKS</span></div><div id="distribution"></div><div class="sub" style="margin-top:10px">Bars show observed frequency, not guaranteed future probability.</div></div>
+  <div class="panel"><div class="panelhead"><div class="paneltitle">Recent tick stream</div><span class="pill" id="streamMarket">R_100</span></div><div class="digits" id="recent"><span class="sub">Waiting for live ticks…</span></div><div class="sub" style="margin-top:12px">Newest tick appears first.</div></div>
+ </section>
+ <section class="panel"><div class="panelhead"><div class="paneltitle">Scanner event log</div><span class="pill">LOCAL SESSION</span></div><div class="tablewrap"><table><thead><tr><th>Time</th><th>Market</th><th>Quote</th><th>Last digit</th><th>Event</th></tr></thead><tbody id="log"><tr><td colspan="5" class="empty">Connect to Deriv to begin receiving live ticks.</td></tr></tbody></table></div></section>
+ <div class="notice"><b>Risk note:</b> This scanner reports descriptive statistics from recent ticks; it does not know the next random digit and does not guarantee a profitable entry. No trades are placed by this page. Stake is shown as a reference only. Test with a demo account before considering any live trading.</div>
+ <div class="footer">Independent prototype — not affiliated with or endorsed by Deriv or DBTraders. Uses the public market-data WebSocket; account login and trade execution are not enabled.</div>
+</main>
+<script>
+(() => {
+ const $=id=>document.getElementById(id);
+ let ws=null, ticks=[], logRows=[], startedAt=0, lastTickAt=0, matchDigit=5, diffDigit=2, seen=0;
+ const MAX_TICKS=1000;
+ function makeDigits(container,selected,onPick){container.innerHTML='';for(let d=0;d<10;d++){const b=document.createElement('button');b.className='digit'+(d===selected?' selected':'');b.textContent=d;b.type='button';b.onclick=()=>onPick(d);container.appendChild(b)}}
+ function setupDigitButtons(){makeDigits('matchDigits',matchDigit,d=>{matchDigit=d;setupDigitButtons();render()});makeDigits('differDigits',diffDigit,d=>{diffDigit=d;setupDigitButtons();render()})}
+ function currentWindow(){return Math.max(1,Number($('window').value)||50)}
+ function getCounts(){const sample=ticks.slice(-currentWindow());const counts=Array(10).fill(0);sample.forEach(t=>counts[t.digit]++);return {sample,counts,n:sample.length}}
+ function pct(x,n){return n?`${(100*x/n).toFixed(1)}%`:'—'}
+ function render(){
+  const {sample,counts,n}=getCounts();$('count').textContent=ticks.length;
+  $('distWindow').textContent=`LAST ${currentWindow()} TICKS`;
+  if(sample.length){const max=Math.max(1,...counts);$('frequent').textContent=counts.indexOf(Math.max(...counts));$('freqdetail').textContent=`${Math.max(...counts)} of ${n} observed · ${pct(Math.max(...counts),n)}`}
+  $('matchBig').textContent=matchDigit;$('matchLabel').textContent=`Matches digit ${matchDigit}`;const mh=counts[matchDigit];$('matchHits').textContent=mh;$('matchN').textContent=n;$('matchPct').textContent=pct(mh,n);$('matchRate').textContent=n?`${mh} of ${n} recent ticks matched`:'Historical sample frequency: waiting for data';$('matchBar').style.width=n?`${100*mh/n}%`:'0%';
+  const dh=n-counts[diffDigit];$('diffBig').textContent=diffDigit;$('diffLabel').textContent=`Differs digit ${diffDigit}`;$('diffHits').textContent=dh;$('diffN').textContent=n;$('diffPct').textContent=pct(dh,n);$('diffRate').textContent=n?`${dh} of ${n} recent ticks differed`:'Historical sample frequency: waiting for data';$('diffBar').style.width=n?`${100*dh/n}%`:'0%';
+  $('distribution').innerHTML=counts.map((c,d)=>`<div style="display:grid;grid-template-columns:20px 1fr 42px;gap:8px;align-items:center;margin:9px 0"><b style="color:${d===matchDigit?'var(--green)':d===diffDigit?'var(--red)':'#a9bbc5'}">${d}</b><div style="height:8px;border-radius:8px;background:#23313a;overflow:hidden"><div style="height:100%;width:${n?100*c/n:0}%;background:${d===matchDigit?'var(--green)':d===diffDigit?'var(--red)':'#4c7184'}"></div></div><span style="text-align:right;color:var(--muted);font-size:11px">${pct(c,n)}</span></div>`).join('');
+  $('recent').innerHTML=ticks.slice(-24).reverse().map((t,i)=>`<span class="bubble ${i===0?'latest':''}" title="${t.quote}">${t.digit}</span>`).join('')||'<span class="sub">Waiting for live ticks…</span>';
+  $('streamMarket').textContent=$('symbol').value;
+ }
+ function addLog(t,event='Tick received'){logRows.unshift({time:new Date().toLocaleTimeString(),market:$('symbol').value,quote:t.quote,digit:t.digit,event});logRows=logRows.slice(0,30);$('log').innerHTML=logRows.map(r=>`<tr><td>${r.time}</td><td>${r.market}</td><td>${r.quote}</td><td><b>${r.digit}</b></td><td>${r.event}</td></tr>`).join('')}
+ function lastDigit(quote){const s=String(quote);const p=s.indexOf('.');return Number(s.replace('.','').slice(p<0?-1:p+1).slice(-1))}
+ function closeSocket(){if(ws){try{ws.onclose=null;ws.close()}catch(e){}ws=null}}
+ function connect(){
+  closeSocket();ticks=[];logRows=[];seen=0;render();$('log').innerHTML='<tr><td colspan="5" class="empty">Connecting to public Deriv market data…</td></tr>';
+  const symbol=$('symbol').value; $('status').textContent='Connecting…';$('dot').classList.remove('live');$('connect').disabled=true;$('stop').disabled=false;
+  try{ws=new WebSocket('wss://api.derivws.com/trading/v1/options/ws/public');}
+  catch(e){fallbackConnect(symbol);return}
+  ws.onopen=()=>{startedAt=Date.now();$('status').textContent='Connected · subscribing';$('dot').classList.add('live');ws.send(JSON.stringify({ticks:symbol,subscribe:1,req_id:1}));addLog({quote:'—',digit:'—'},'Subscription requested')};
+  ws.onmessage=ev=>{let data;try{data=JSON.parse(ev.data)}catch(e){return}
+   if(data.error){$('status').textContent='API error';addLog({quote:'—',digit:'—'},data.error.message||'API error');return}
+   if(data.tick){const q=data.tick.quote;const d=lastDigit(q);const t={quote:q,digit:d,epoch:data.tick.epoch};ticks.push(t);if(ticks.length>MAX_TICKS)ticks.shift();seen++;lastTickAt=Date.now();$('latest').textContent=d;$('lastquote').textContent=`${q} · ${new Date((data.tick.epoch||Date.now()/1000)*1000).toLocaleTimeString()}`;$('latency').textContent='Live';$('status').textContent=`Live · ${symbol}`;if(seen===1)addLog(t,'First tick received');else addLog(t);render()}
+  };
+  ws.onerror=()=>{$('status').textContent='Connection error';$('dot').classList.remove('live');$('connect').disabled=false;$('stop').disabled=true};
+  ws.onclose=()=>{$('status').textContent='Disconnected';$('dot').classList.remove('live');$('connect').disabled=false;$('stop').disabled=true};
+ }
+ function fallbackConnect(symbol){
+  try{ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');ws.onopen=()=>{ws.send(JSON.stringify({ticks:symbol,subscribe:1}));$('status').textContent='Connected · legacy public feed';$('dot').classList.add('live')};ws.onmessage=ev=>{let x;try{x=JSON.parse(ev.data)}catch(e){return}if(x.tick){const q=x.tick.quote,d=lastDigit(q),t={quote:q,digit:d,epoch:x.tick.epoch};ticks.push(t);if(ticks.length>MAX_TICKS)ticks.shift();$('latest').textContent=d;$('lastquote').textContent=q;addLog(t);render()}};ws.onclose=()=>{$('status').textContent='Disconnected';$('connect').disabled=false;$('stop').disabled=true};}catch(e){$('status').textContent='Could not connect';$('connect').disabled=false;$('stop').disabled=true}
+ }
+ $('connect').onclick=connect;$('stop').onclick=()=>{closeSocket();$('status').textContent='Stopped';$('dot').classList.remove('live');$('connect').disabled=false;$('stop').disabled=true};
+ $('symbol').onchange=()=>{if(ws)connect();else render()};$('window').onchange=render;
+ setupDigitButtons();render();
+})();
+</script>
+</body>
+</html>
